@@ -49,9 +49,6 @@
                         <goals>
                             <goal>test</goal>
                         </goals>
-                        <configuration>
-                            <suites>it.connectors.MusIT</suites>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
