@@ -1,10 +1,8 @@
 package it.connectors
 
-import java.net.URI
-import java.util
+import java.util.concurrent.{CountDownLatch, TimeUnit}
 
-import com.twitter.finagle.http.{Method, Response}
-import httpclient.{RichHTTPClient, RichHTTPClientImpl}
+import io.vertx.core.http.{HttpClient, HttpClientOptions, HttpClientResponse}
 import io.vertx.core.{AsyncResult, Future, Handler}
 import it.connectors.server.VertxServer
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
@@ -14,36 +12,40 @@ class Test extends FlatSpec with BeforeAndAfterAll {
   val vertxStartedFuture : Future[Void] = Future.future()
 
   override protected def beforeAll(): Unit = {
+    println("Starting vertx server...")
     VertxServer.start(vertxStartedFuture)
   }
 
   override protected def afterAll(): Unit = {
+    println("Shutting down vertx server...")
     VertxServer.stop()
   }
 
-  "this is a test" should "be ok" in {
-    val uriPath = "http://127.0.0.1:8080/testing_interno/v1/test4"
-    val uri : URI = new URI(uriPath)
 
-    //setup vertx
-
+  it should "consume with vertx client" in {
 
     vertxStartedFuture.setHandler(
       new Handler[AsyncResult[Void]] {
         override def handle(e: AsyncResult[Void]): Unit = {
 
-          //call with client
-          val client : RichHTTPClient = new RichHTTPClientImpl(uri.getHost + ":" + uri.getPort)
-          val response : Response = client.synchRequest(uri.getPath,
-            Method.Post,
-            "{\"pepe\" : true}".getBytes,
-            new util.HashMap[String, String]())
+          val response = null
+          val barrier : CountDownLatch = new CountDownLatch(1)
 
-          assert(response != null)
+          //call with vertx client
+          val client : HttpClient = VertxServer.vertx.createHttpClient(new HttpClientOptions().setDefaultHost("localhost")
+            .setDefaultPort(8080))
+          client.getNow("/", new Handler[HttpClientResponse] {
+            override def handle(e: HttpClientResponse): Unit = {
+              println(s"Response received!!: ${e.statusCode()}")
+              barrier.countDown()
+            }
+          })
 
-          println(s"Status code: ${response.statusCode}")
-          println(s"Response body: ${response.contentString}")
-
+          try{
+            assert(barrier.await(300000, TimeUnit.MILLISECONDS), "Timeout reached")
+          } catch {
+            case e: InterruptedException => fail("Interrupt exception occured")
+          }
         }
       }
     )
