@@ -1,13 +1,13 @@
-package it.connectors
+package it.connectors.server
 
 import java.util.concurrent.{CountDownLatch, TimeUnit}
 
+import connectors.server.VertxServer
 import io.vertx.core.http.{HttpClient, HttpClientOptions, HttpClientResponse}
 import io.vertx.core.{AsyncResult, Future, Handler}
-import it.connectors.server.VertxServer
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 
-class Test extends FlatSpec with BeforeAndAfterAll {
+class ServerTest extends FlatSpec with BeforeAndAfterAll {
 
   val vertxStartedFuture : Future[Void] = Future.future()
 

@@ -1,4 +1,4 @@
-package it.connectors.server
+package connectors.server
 
 import io.vertx.core.http.HttpMethod.{GET, POST}
 import io.vertx.core.http.HttpServerRequest
