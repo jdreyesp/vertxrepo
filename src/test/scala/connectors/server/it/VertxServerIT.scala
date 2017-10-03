@@ -28,11 +28,10 @@ class VertxServerIT extends FlatSpec with BeforeAndAfterAll {
       new Handler[AsyncResult[Void]] {
         override def handle(e: AsyncResult[Void]): Unit = {
 
-          val response = null
           val barrier : CountDownLatch = new CountDownLatch(1)
 
           //call with vertx client
-          val client : HttpClient = VertxServer.vertx.createHttpClient(new HttpClientOptions().setDefaultHost("localhost")
+          val client : HttpClient = VertxServer.vertx.get.createHttpClient(new HttpClientOptions().setDefaultHost("localhost")
             .setDefaultPort(8080))
           client.getNow("/", new Handler[HttpClientResponse] {
             override def handle(e: HttpClientResponse): Unit = {
@@ -41,11 +40,8 @@ class VertxServerIT extends FlatSpec with BeforeAndAfterAll {
             }
           })
 
-          try{
-            assert(barrier.await(300000, TimeUnit.MILLISECONDS), "Timeout reached")
-          } catch {
-            case e: InterruptedException => fail("Interrupt exception occured")
-          }
+          assert(barrier.await(300000, TimeUnit.MILLISECONDS), "Timeout reached")
+
         }
       }
     )

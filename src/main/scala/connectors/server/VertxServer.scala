@@ -8,17 +8,17 @@ import io.vertx.ext.web.{Router, RoutingContext}
 
 class VertxServer {
 
-  var vertx : Vertx = null
+  var vertx : Option[Vertx] = None
 
   def start(startFuture: Future[Void]): Unit = {
-    vertx.createHttpServer()
+    vertx.get.createHttpServer()
       .requestHandler(getStartupServiceHandler(loadRouters))
         .listen(8080, "localhost")
     startFuture.complete()
   }
 
   def stop(): Unit = {
-    vertx.close()
+    vertx.get.close()
   }
 
   private def getStartupServiceHandler(router: Router): Handler[HttpServerRequest] = {
@@ -31,7 +31,7 @@ class VertxServer {
   }
 
   def loadRouters: Router = {
-    val router: Router = Router.router(vertx)
+    val router: Router = Router.router(vertx.get)
     router.route.handler(BodyHandler.create())
     router.route(GET, "/").handler(getEsbMockHandler)
     router.route(POST, "/testing_interno/v1/test4").handler(getTestPayloadMockHandler)
@@ -67,6 +67,6 @@ class VertxServer {
 
 object VertxServer extends VertxServer {
 
-  vertx = Vertx.vertx()
+  vertx = Some(Vertx.vertx())
 
 }
